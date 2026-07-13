@@ -1,0 +1,46 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Proveedores</h1><p class="sub">RUT, certificación bancaria, contactos, condiciones de pago y calificación.</p></div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:proveedor_nuevo' %}">+ Registrar proveedor</a>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por razón social, NIT, tipo o ciudad…">
+  <button class="btn" type="submit">Buscar</button>
+  {% if buscar %}<a class="btn btn-borde" href="{% url 'supermercado:proveedores' %}">Limpiar</a>{% endif %}
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>ID</th><th>Razón social</th><th>NIT</th><th>Tipo</th><th>Banco / cuenta</th>
+      <th>Entrega</th><th>Pago</th><th>Calificación</th><th>Productos</th><th>Pedidos</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+      {% for p in proveedores %}
+        <tr>
+          <td class="dato">{{ p.id_proveedor }}</td>
+          <td>{{ p.razon_social }}<br><span style="font-size:.72rem;color:var(--gris);">{{ p.contacto_comercial }}</span></td>
+          <td class="dato">{{ p.nit }}</td>
+          <td style="font-size:.78rem;">{{ p.get_tipo_proveedor_display }}</td>
+          <td style="font-size:.78rem;">{{ p.banco }}<br><span class="dato" style="font-size:.72rem;color:var(--gris);">{{ p.get_tipo_cuenta_display }} {{ p.numero_cuenta }}</span></td>
+          <td class="dato">{{ p.tiempo_entrega_promedio }} d</td>
+          <td class="dato">{{ p.condiciones_pago }} d</td>
+          <td>
+            {% if p.calificacion >= 4 %}<span class="tag tag-verde">{{ p.calificacion }}/5</span>
+            {% elif p.calificacion == 3 %}<span class="tag tag-amarillo">{{ p.calificacion }}/5</span>
+            {% else %}<span class="tag tag-rojo">{{ p.calificacion }}/5</span>{% endif %}
+          </td>
+          <td class="dato">{{ p.n_productos }}</td>
+          <td class="dato">{{ p.n_pedidos }}</td>
+          <td style="white-space:nowrap;">
+            <a class="btn btn-borde btn-mini" href="{% url 'supermercado:proveedor_editar' p.pk %}">Editar</a>
+            <a class="btn btn-rojo btn-mini" href="{% url 'supermercado:proveedor_eliminar' p.pk %}">Eliminar</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="11" class="vacio">No hay proveedores registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

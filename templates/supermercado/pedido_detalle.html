@@ -1,0 +1,67 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <h1>Orden de pedido #{{ p.id_compra }}</h1>
+  <div>
+    {% if p.estado == 'PENDIENTE' %}
+      <a class="btn" href="{% url 'supermercado:pedido_recibir' p.pk %}">Marcar como recibida</a>
+    {% endif %}
+    <a class="btn btn-borde" href="{% url 'supermercado:pedidos' %}">← Volver</a>
+  </div>
+</div>
+
+<div class="caja" style="padding:1.5rem;max-width:900px;">
+  <div class="grid" style="margin-bottom:1.2rem;">
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);">Proveedor</div>
+      <div><strong>{{ p.proveedor.razon_social }}</strong></div>
+      <div class="dato" style="font-size:.82rem;">NIT {{ p.proveedor.nit }} · RUT {{ p.proveedor.rut }}</div>
+      <div style="font-size:.8rem;color:var(--gris);">{{ p.proveedor.contacto_logistico }} (logística)</div>
+    </div>
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);">Entrega</div>
+      <div style="font-size:.85rem;">{{ p.lugar_entrega }}</div>
+      <div style="font-size:.85rem;">Sede: {{ p.sede.nombre }}</div>
+      <div style="font-size:.85rem;">Entrega estimada: {{ p.proveedor.tiempo_entrega_promedio }} días</div>
+    </div>
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);">Estado</div>
+      {% if p.estado == 'RECIBIDA' %}<span class="tag tag-verde">RECIBIDA</span>
+      {% elif p.estado == 'PENDIENTE' %}<span class="tag tag-amarillo">PENDIENTE</span>
+      {% else %}<span class="tag tag-rojo">CANCELADA</span>{% endif %}
+      <div style="font-size:.85rem;margin-top:.3rem;">Fecha de pedido: <span class="dato">{{ p.fecha_compra }}</span></div>
+      <div style="font-size:.85rem;">Pago: {{ p.proveedor.condiciones_pago }} días</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Costo unitario</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        {% for d in detalles %}
+          <tr>
+            <td class="dato">{{ d.producto.codigo_barras }}</td>
+            <td>{{ d.producto.nombre }}</td>
+            <td class="dato">{{ d.cantidad }}</td>
+            <td class="dato">$ {{ d.precio_unitario|floatformat:0 }}</td>
+            <td class="dato">$ {{ d.subtotal|floatformat:0 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+    <table style="width:auto;min-width:260px;">
+      <tr style="background:var(--cana-100);"><td><strong>Total del pedido</strong></td>
+        <td class="dato" style="text-align:right;"><strong>$ {{ p.total|floatformat:0 }}</strong></td></tr>
+    </table>
+  </div>
+
+  {% if p.estado == 'RECIBIDA' %}
+    <div class="msg msg-success" style="margin-top:1rem;">
+      Orden recibida: el trigger <code>trg_compra_recibida</code> ya sumó estas unidades al inventario de la sede.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

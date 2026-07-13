@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Supertiendas Cañaveral{% endblock %}</title>
+  <style>
+    :root{
+      --cana:#14532D;        /* verde caña — Valle del Cauca */
+      --cana-800:#0E3A20;
+      --cana-100:#EAF2EC;
+      --amarilla:#F5B301;    /* amarillo Tarjeta Amarilla */
+      --tinta:#12181B;
+      --papel:#F7F8F5;
+      --linea:#DDE3DC;
+      --gris:#5B6B62;
+      --rojo:#B3261E;
+      --naranja:#C2410C;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--papel);color:var(--tinta);
+         font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;}
+    .dato{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;}
+    a{color:var(--cana);}
+
+    /* ---- Encabezado y navegación ---- */
+    header{background:var(--cana);color:#fff;border-bottom:4px solid var(--amarilla);}
+    .barra{max-width:1200px;margin:0 auto;padding:.9rem 1.25rem;display:flex;
+           align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+    .marca{font-family:Georgia,serif;font-size:1.35rem;font-weight:600;color:#fff;
+           text-decoration:none;letter-spacing:-.01em;}
+    .marca small{display:block;font-family:system-ui,sans-serif;font-size:.68rem;
+                 color:#AFCBB8;letter-spacing:.06em;text-transform:uppercase;font-weight:400;}
+    nav{display:flex;gap:.15rem;flex-wrap:wrap;}
+    nav a{color:#D6E5DB;text-decoration:none;padding:.4rem .7rem;border-radius:3px;
+          font-size:.88rem;}
+    nav a:hover{background:var(--cana-800);color:#fff;}
+    nav a.activo{background:var(--amarilla);color:var(--cana-800);font-weight:600;}
+
+    main{max-width:1200px;margin:0 auto;padding:1.5rem 1.25rem 3rem;}
+
+    /* ---- Encabezado de página ---- */
+    .cabecera{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;
+              flex-wrap:wrap;margin-bottom:1rem;}
+    h1{font-size:1.5rem;margin:0;color:var(--cana);}
+    .sub{color:var(--gris);font-size:.88rem;margin:.2rem 0 0;}
+
+    /* ---- Botones ---- */
+    .btn{display:inline-block;background:var(--cana);color:#fff;border:none;padding:.5rem .9rem;
+         border-radius:3px;text-decoration:none;font-size:.86rem;cursor:pointer;font-weight:500;}
+    .btn:hover{background:var(--cana-800);}
+    .btn-amarillo{background:var(--amarilla);color:var(--cana-800);}
+    .btn-amarillo:hover{background:#DDA100;}
+    .btn-borde{background:#fff;color:var(--cana);border:1px solid var(--linea);}
+    .btn-borde:hover{background:var(--cana-100);}
+    .btn-rojo{background:var(--rojo);}
+    .btn-rojo:hover{background:#8F1D17;}
+    .btn-mini{padding:.22rem .5rem;font-size:.76rem;}
+
+    /* ---- Buscador ---- */
+    .buscador{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap;}
+    .buscador input, .buscador select{padding:.45rem .6rem;border:1px solid var(--linea);
+         border-radius:3px;font-size:.88rem;min-width:230px;}
+
+    /* ---- Tablas ---- */
+    .caja{background:#fff;border:1px solid var(--linea);border-radius:4px;overflow:hidden;}
+    .scroll{overflow-x:auto;}
+    table{border-collapse:collapse;width:100%;font-size:.85rem;}
+    th{background:var(--cana-800);color:#fff;text-align:left;padding:.5rem .7rem;
+       font-size:.71rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+    td{padding:.45rem .7rem;border-bottom:1px solid var(--linea);}
+    tbody tr:nth-child(even){background:#FAFBF9;}
+    tbody tr:hover{background:#FFF9E6;}
+    .vacio{padding:2rem 1rem;text-align:center;color:var(--gris);}
+
+    /* ---- Etiquetas de estado ---- */
+    .tag{display:inline-block;padding:.1rem .45rem;border-radius:3px;font-size:.72rem;
+         font-weight:600;white-space:nowrap;}
+    .tag-verde{background:#DCF0E3;color:#14532D;}
+    .tag-amarillo{background:#FFF3CD;color:#8A6100;}
+    .tag-naranja{background:#FFE4D3;color:#9A3B00;}
+    .tag-rojo{background:#FBE0DE;color:#8F1D17;}
+    .tag-gris{background:#E9ECEA;color:#5B6B62;}
+
+    /* ---- Mensajes ---- */
+    .msg{padding:.7rem 1rem;border-radius:4px;margin-bottom:1rem;font-size:.9rem;}
+    .msg-success{background:var(--cana-100);border-left:4px solid var(--cana);}
+    .msg-error{background:#FBE0DE;border-left:4px solid var(--rojo);}
+    .msg-warning{background:#FFF3CD;border-left:4px solid var(--amarilla);}
+    .msg-info{background:#E7F0F5;border-left:4px solid #2E6B8A;}
+
+    /* ---- Formularios ---- */
+    .campo{width:100%;padding:.45rem .6rem;border:1px solid var(--linea);border-radius:3px;
+           font-size:.9rem;background:#fff;}
+    .campo:disabled{background:#EFF1EF;color:var(--gris);cursor:not-allowed;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.9rem;}
+    .grupo label{display:block;font-size:.78rem;font-weight:600;color:var(--cana-800);
+                 margin-bottom:.2rem;}
+    .grupo .ayuda{font-size:.74rem;color:var(--gris);margin-top:.15rem;}
+    .grupo .error{font-size:.76rem;color:var(--rojo);margin-top:.15rem;}
+    .check{display:flex;align-items:center;gap:.45rem;}
+    .check input{width:auto;}
+    .acciones{margin-top:1.2rem;display:flex;gap:.5rem;}
+
+    footer{border-top:1px solid var(--linea);padding:1.2rem;text-align:center;
+           color:var(--gris);font-size:.8rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="barra">
+      <a class="marca" href="{% url 'supermercado:inicio' %}">
+        Supertiendas Cañaveral
+        <small>Gestión de datos · Valle del Cauca</small>
+      </a>
+      <nav>
+        <a href="{% url 'supermercado:inicio' %}"       class="{% if seccion == 'inicio' %}activo{% endif %}">Inicio</a>
+        <a href="{% url 'supermercado:clientes' %}"     class="{% if seccion == 'clientes' %}activo{% endif %}">Clientes</a>
+        <a href="{% url 'supermercado:proveedores' %}"  class="{% if seccion == 'proveedores' %}activo{% endif %}">Proveedores</a>
+        <a href="{% url 'supermercado:productos' %}"    class="{% if seccion == 'productos' %}activo{% endif %}">Productos</a>
+        <a href="{% url 'supermercado:inventario' %}"   class="{% if seccion == 'inventario' %}activo{% endif %}">Inventario</a>
+        <a href="{% url 'supermercado:facturas' %}"     class="{% if seccion == 'facturas' %}activo{% endif %}">Facturas</a>
+        <a href="{% url 'supermercado:pedidos' %}"      class="{% if seccion == 'pedidos' %}activo{% endif %}">Pedidos</a>
+        <a href="{% url 'supermercado:consultas' %}"    class="{% if seccion == 'consultas' %}activo{% endif %}">Consultas SQL</a>
+        <a href="/admin/">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% if messages %}
+      {% for m in messages %}
+        <div class="msg msg-{{ m.tags|default:'info' }}">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer>
+    Supertiendas Cañaveral S.A. · Proyecto de Bases de Datos · Django + PostgreSQL 16
+  </footer>
+</body>
+</html>

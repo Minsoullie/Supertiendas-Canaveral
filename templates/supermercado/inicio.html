@@ -1,0 +1,72 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+{% with seccion="inicio" %}{% endwith %}
+<div class="cabecera">
+  <div>
+    <h1>Panel de gestión</h1>
+    <p class="sub">{% if empresa %}{{ empresa.razon_social }} · NIT {{ empresa.nit }} · {{ empresa.sitio_web }}{% endif %}</p>
+  </div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:factura_nueva' %}">+ Nueva factura</a>
+</div>
+
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;
+                background:var(--linea);border:1px solid var(--linea);margin-bottom:1.5rem;">
+  {% for etiqueta, valor in kpis %}
+    <div style="background:#fff;padding:.9rem 1rem;">
+      <span class="dato" style="display:block;font-size:1.35rem;font-weight:600;color:var(--cana);">{{ valor }}</span>
+      <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris);">{{ etiqueta }}</span>
+    </div>
+  {% endfor %}
+</section>
+
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;align-items:start;">
+  <div class="caja" style="padding:1rem 1.15rem;">
+    <h2 style="margin:0 0 .8rem;font-size:1rem;color:var(--cana);">Ingresos por mes</h2>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:150px;">
+      {% for s in serie %}
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;"
+             title="{{ s.mes }}: ${{ s.valor|floatformat:0 }}">
+          <div style="background:var(--cana);height:{{ s.pct }}%;border-radius:2px 2px 0 0;"></div>
+          <span class="dato" style="font-size:.6rem;color:var(--gris);text-align:center;margin-top:3px;">{{ s.mes }}</span>
+        </div>
+      {% empty %}
+        <p class="vacio">Sin ventas registradas.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="caja" style="padding:1rem 1.15rem;">
+    <h2 style="margin:0 0 .8rem;font-size:1rem;color:var(--cana);">Estado del inventario</h2>
+    <table>
+      <tr><td><span class="tag tag-rojo">AGOTADO</span></td><td class="dato">{{ conteo.AGOTADO }}</td><td style="font-size:.78rem;color:var(--gris);">Pedido inmediato</td></tr>
+      <tr><td><span class="tag tag-naranja">CRÍTICO</span></td><td class="dato">{{ conteo.CRITICO }}</td><td style="font-size:.78rem;color:var(--gris);">Pedido de emergencia</td></tr>
+      <tr><td><span class="tag tag-amarillo">ALERTA</span></td><td class="dato">{{ conteo.ALERTA }}</td><td style="font-size:.78rem;color:var(--gris);">Pedido normal</td></tr>
+      <tr><td><span class="tag tag-verde">SEGURO</span></td><td class="dato">{{ conteo.SEGURO }}</td><td style="font-size:.78rem;color:var(--gris);">Mantener monitoreo</td></tr>
+    </table>
+    <p style="font-size:.74rem;color:var(--gris);margin:.7rem 0 0;">
+      Días de stock = inventario ÷ demanda diaria (calculado, nunca almacenado).</p>
+  </div>
+</div>
+
+{% if alertas %}
+<h2 style="font-size:1rem;color:var(--cana);margin:1.5rem 0 .6rem;">Requieren reabastecimiento urgente</h2>
+<div class="caja scroll">
+  <table>
+    <thead><tr><th>Producto</th><th>Sede</th><th>Inventario</th><th>Demanda diaria</th><th>Días de stock</th><th>Estado</th><th>Acción</th></tr></thead>
+    <tbody>
+      {% for i in alertas %}
+        <tr>
+          <td>{{ i.producto.nombre }}</td>
+          <td>{{ i.sede.nombre }}</td>
+          <td class="dato">{{ i.cantidad_disponible }}</td>
+          <td class="dato">{{ i.demanda_diaria }}</td>
+          <td class="dato">{{ i.dias_stock }}</td>
+          <td>{% if i.categoria_estado == 'AGOTADO' %}<span class="tag tag-rojo">AGOTADO</span>{% else %}<span class="tag tag-naranja">CRÍTICO</span>{% endif %}</td>
+          <td style="font-size:.8rem;">{{ i.accion_recomendada }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

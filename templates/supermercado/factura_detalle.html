@@ -1,0 +1,85 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <h1>Factura Electrónica de Venta</h1>
+  <a class="btn btn-borde" href="{% url 'supermercado:facturas' %}">← Volver</a>
+</div>
+
+<div class="caja" style="padding:1.5rem;max-width:900px;">
+  <div style="display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;
+              border-bottom:2px solid var(--amarilla);padding-bottom:1rem;margin-bottom:1rem;">
+    <div>
+      <div style="font-family:Georgia,serif;font-size:1.2rem;color:var(--cana);font-weight:600;">
+        {{ empresa.razon_social|default:"Supertiendas Cañaveral S.A." }}</div>
+      <div style="font-size:.82rem;color:var(--gris);">
+        NIT {{ empresa.nit }}<br>{{ empresa.direccion }}<br>{{ empresa.ciudad }} · {{ empresa.telefono }}
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div class="dato" style="font-size:1.3rem;font-weight:600;">{{ f.numero_completo }}</div>
+      <div style="font-size:.78rem;color:var(--gris);">
+        Resolución DIAN {{ f.resolucion.numero_resolucion }}<br>
+        Prefijo {{ f.resolucion.prefijo }} · Rango {{ f.resolucion.rango_desde }}–{{ f.resolucion.rango_hasta }}<br>
+        Vigencia: {{ f.resolucion.vigencia_desde }} a {{ f.resolucion.vigencia_hasta }}
+      </div>
+      {% if f.estado == 'ANULADA' %}<span class="tag tag-rojo" style="margin-top:.4rem;display:inline-block;">ANULADA</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="grid" style="margin-bottom:1.2rem;">
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);letter-spacing:.05em;">Adquirente</div>
+      <div><strong>{{ f.cliente.nombre_completo }}</strong></div>
+      <div class="dato" style="font-size:.82rem;">{{ f.cliente.tipo_documento }} {{ f.cliente.numero_documento }}</div>
+      <div style="font-size:.8rem;color:var(--gris);">{{ f.cliente.get_regimen_tributario_display }}</div>
+    </div>
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);letter-spacing:.05em;">Fechas</div>
+      <div style="font-size:.85rem;">Generación: <span class="dato">{{ f.fecha_orden|date:"Y-m-d H:i" }}</span></div>
+      <div style="font-size:.85rem;">Expedición: <span class="dato">{{ f.fecha_expedicion|date:"Y-m-d H:i" }}</span></div>
+    </div>
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--gris);letter-spacing:.05em;">Venta</div>
+      <div style="font-size:.85rem;">Sede: {{ f.sede.nombre }}</div>
+      <div style="font-size:.85rem;">Cajero: {{ f.empleado }}</div>
+      <div style="font-size:.85rem;">Pago: {{ f.metodo_pago.nombre }} ({{ f.tipo_venta }})</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>Descripción</th><th>Cant.</th><th>Valor unitario</th><th>Base</th><th>IVA %</th><th>IVA $</th><th>Total ítem</th>
+      </tr></thead>
+      <tbody>
+        {% for d in detalles %}
+          <tr>
+            <td>{{ d.producto.nombre }}
+              {% if d.producto.categoria_iva == 'EXCLUIDO' %}<span class="tag tag-gris">EXCLUIDO</span>{% endif %}</td>
+            <td class="dato">{{ d.cantidad }}</td>
+            <td class="dato">$ {{ d.precio_unitario|floatformat:0 }}</td>
+            <td class="dato">$ {{ d.subtotal|floatformat:0 }}</td>
+            <td class="dato">{{ d.iva_porcentaje|floatformat:0 }}%</td>
+            <td class="dato">$ {{ d.iva_valor|floatformat:0 }}</td>
+            <td class="dato">$ {{ d.total_linea|floatformat:0 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+    <table style="width:auto;min-width:280px;">
+      <tr><td>Subtotal (antes de IVA)</td><td class="dato" style="text-align:right;">$ {{ f.subtotal|floatformat:0 }}</td></tr>
+      <tr><td>IVA</td><td class="dato" style="text-align:right;">$ {{ f.iva|floatformat:0 }}</td></tr>
+      <tr style="background:var(--cana-100);"><td><strong>Total a pagar</strong></td>
+          <td class="dato" style="text-align:right;"><strong>$ {{ f.total|floatformat:0 }}</strong></td></tr>
+    </table>
+  </div>
+
+  <div style="margin-top:1rem;border-top:1px solid var(--linea);padding-top:.7rem;
+              font-size:.74rem;color:var(--gris);">
+    CUFE: <span class="dato">{{ f.cufe|default:"—" }}</span> · Espacio previsto para el código QR.
+  </div>
+</div>
+{% endblock %}

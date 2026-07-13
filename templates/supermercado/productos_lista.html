@@ -1,0 +1,50 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Productos e insumos</h1>
+    <p class="sub">Cada producto exige un proveedor registrado. La eliminación es lógica (activo / inactivo).</p></div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:producto_nuevo' %}">+ Registrar producto</a>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por nombre, código de barras, categoría, marca o proveedor…">
+  <button class="btn" type="submit">Buscar</button>
+  <a class="btn btn-borde" href="?{% if inactivos %}{% else %}inactivos=1{% endif %}">
+    {% if inactivos %}Ver solo activos{% else %}Incluir inactivos{% endif %}</a>
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>ID</th><th>Producto</th><th>Código de barras</th><th>Categoría</th><th>Marca</th>
+      <th>Proveedor</th><th>Precio</th><th>Unidad</th><th>IVA</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+      {% for p in productos %}
+        <tr {% if not p.activo %}style="opacity:.55;"{% endif %}>
+          <td class="dato">{{ p.id_producto }}</td>
+          <td>{{ p.nombre }}</td>
+          <td class="dato">{{ p.codigo_barras }}</td>
+          <td>{{ p.categoria.nombre }}</td>
+          <td>{{ p.marca.nombre }}{% if p.marca.es_marca_propia %} <span class="tag tag-amarillo">PROPIA</span>{% endif %}</td>
+          <td style="font-size:.8rem;">{{ p.proveedor.razon_social }}</td>
+          <td class="dato">$ {{ p.precio_venta|floatformat:0 }}</td>
+          <td>{{ p.unidad_medida }}</td>
+          <td>
+            {% if p.categoria_iva == 'EXCLUIDO' %}<span class="tag tag-gris">EXCLUIDO</span>
+            {% elif p.categoria_iva == 'EXENTO' %}<span class="tag tag-verde">0%</span>
+            {% elif p.categoria_iva == 'DIFERENCIAL' %}<span class="tag tag-amarillo">5%</span>
+            {% else %}<span class="tag tag-naranja">19%</span>{% endif %}
+          </td>
+          <td>{% if p.activo %}<span class="tag tag-verde">ACTIVO</span>{% else %}<span class="tag tag-gris">INACTIVO</span>{% endif %}</td>
+          <td style="white-space:nowrap;">
+            <a class="btn btn-borde btn-mini" href="{% url 'supermercado:producto_editar' p.pk %}">Editar</a>
+            <a class="btn btn-rojo btn-mini" href="{% url 'supermercado:producto_eliminar' p.pk %}">
+              {% if p.activo %}Desactivar{% else %}Reactivar{% endif %}</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="11" class="vacio">No hay productos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

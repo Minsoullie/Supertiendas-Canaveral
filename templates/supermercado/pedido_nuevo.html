@@ -1,0 +1,78 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Nueva orden de pedido</h1>
+    <p class="sub">Solo proveedores registrados. Cantidad entre 1 y 500. El estado inicia en PENDIENTE.</p></div>
+  <a class="btn btn-borde" href="{% url 'supermercado:pedidos' %}">← Volver</a>
+</div>
+
+<form method="get" class="buscador">
+  <label style="align-self:center;font-size:.85rem;">Proveedor:</label>
+  <select name="proveedor" class="campo" style="max-width:340px;" onchange="this.form.submit()">
+    <option value="">— Seleccione un proveedor registrado —</option>
+    {% for pr in proveedores %}
+      <option value="{{ pr.pk }}" {% if proveedor_sel and proveedor_sel.pk == pr.pk %}selected{% endif %}>
+        {{ pr.razon_social }} (NIT {{ pr.nit }})</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if proveedor_sel %}
+<form method="post" class="caja" style="padding:1.2rem;">
+  {% csrf_token %}
+  <input type="hidden" name="proveedor" value="{{ proveedor_sel.pk }}">
+  <div class="grid">
+    {% for campo in form %}
+      {% if campo.name != 'proveedor' %}
+        <div class="grupo"><label>{{ campo.label }}</label>{{ campo }}
+          {% for e in campo.errors %}<div class="error">{{ e }}</div>{% endfor %}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <h2 style="font-size:1rem;color:var(--cana);margin:1.4rem 0 .5rem;">
+    Productos de {{ proveedor_sel.razon_social }}</h2>
+  <table id="lineas">
+    <thead><tr><th>Producto</th><th style="width:110px;">Cantidad</th><th style="width:140px;">Costo unitario</th><th style="width:50px;"></th></tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <select name="producto" class="campo" required>
+            <option value="">— Seleccione —</option>
+            {% for p in productos %}
+              <option value="{{ p.pk }}">{{ p.nombre }} ({{ p.codigo_barras }})</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td><input type="number" name="cantidad" class="campo" min="1" max="500" value="1" required></td>
+        <td><input type="number" name="precio_unitario" class="campo" min="1" step="0.01" required></td>
+        <td><button type="button" class="btn btn-rojo btn-mini" onclick="quitar(this)">×</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-borde btn-mini" style="margin-top:.5rem;" onclick="agregar()">+ Agregar producto</button>
+
+  <div class="acciones">
+    <button type="submit" class="btn">Crear orden de pedido</button>
+    <a class="btn btn-borde" href="{% url 'supermercado:pedidos' %}">Cancelar</a>
+  </div>
+</form>
+
+<script>
+  function agregar(){
+    const cuerpo = document.querySelector('#lineas tbody');
+    const fila = cuerpo.rows[0].cloneNode(true);
+    fila.querySelectorAll('input').forEach(i => { if(i.name === 'cantidad') i.value = 1; else i.value=''; });
+    fila.querySelector('select').value = '';
+    cuerpo.appendChild(fila);
+  }
+  function quitar(boton){
+    const cuerpo = document.querySelector('#lineas tbody');
+    if (cuerpo.rows.length > 1) boton.closest('tr').remove();
+    else alert('La orden debe tener al menos 1 producto.');
+  }
+</script>
+{% else %}
+  <div class="caja vacio">Seleccione primero un proveedor registrado para continuar.</div>
+{% endif %}
+{% endblock %}

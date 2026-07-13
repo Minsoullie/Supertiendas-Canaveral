@@ -1,0 +1,31 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <h1>{{ titulo }}</h1>
+    {% if ayuda %}<p class="sub">{{ ayuda }}</p>{% endif %}
+  </div>
+  <a class="btn btn-borde" href="{% url volver %}">← Volver</a>
+</div>
+
+<form method="post" class="caja" style="padding:1.2rem;">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="msg msg-error">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <div class="grid">
+    {% for campo in form %}
+      <div class="grupo {% if campo.field.widget.input_type == 'checkbox' %}check{% endif %}">
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% if campo.help_text %}<div class="ayuda">{{ campo.help_text }}</div>{% endif %}
+        {% for e in campo.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="acciones">
+    <button type="submit" class="btn">Guardar</button>
+    <a class="btn btn-borde" href="{% url volver %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

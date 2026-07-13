@@ -1,0 +1,48 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Órdenes de pedido</h1>
+    <p class="sub">Inician siempre en PENDIENTE. Al marcarlas RECIBIDA, un trigger de PL/pgSQL actualiza el stock.</p></div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:pedido_nuevo' %}">+ Nueva orden de pedido</a>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por número, proveedor, NIT o bodega…">
+  <button class="btn" type="submit">Buscar</button>
+  {% if buscar %}<a class="btn btn-borde" href="{% url 'supermercado:pedidos' %}">Limpiar</a>{% endif %}
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>N.º orden</th><th>Fecha</th><th>Proveedor</th><th>NIT</th><th>Lugar de entrega</th>
+      <th>Sede</th><th>Total</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+      {% for p in pedidos %}
+        <tr>
+          <td class="dato"><strong>#{{ p.id_compra }}</strong></td>
+          <td class="dato">{{ p.fecha_compra|date:"Y-m-d" }}</td>
+          <td>{{ p.proveedor.razon_social }}</td>
+          <td class="dato">{{ p.proveedor.nit }}</td>
+          <td style="font-size:.8rem;">{{ p.lugar_entrega }}</td>
+          <td style="font-size:.8rem;">{{ p.sede.nombre }}</td>
+          <td class="dato">$ {{ p.total|floatformat:0 }}</td>
+          <td>
+            {% if p.estado == 'RECIBIDA' %}<span class="tag tag-verde">RECIBIDA</span>
+            {% elif p.estado == 'PENDIENTE' %}<span class="tag tag-amarillo">PENDIENTE</span>
+            {% else %}<span class="tag tag-rojo">CANCELADA</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            <a class="btn btn-borde btn-mini" href="{% url 'supermercado:pedido_detalle' p.pk %}">Ver</a>
+            {% if p.estado == 'PENDIENTE' %}
+              <a class="btn btn-mini" href="{% url 'supermercado:pedido_recibir' p.pk %}">Recibir</a>
+              <a class="btn btn-rojo btn-mini" href="{% url 'supermercado:pedido_cancelar' p.pk %}">Cancelar</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="vacio">No hay órdenes de pedido.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

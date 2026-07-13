@@ -1,0 +1,60 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Nueva factura de venta</h1>
+    <p class="sub">Mínimo 1 producto. El IVA se calcula por ítem según su categoría; los excluidos no causan impuesto.</p></div>
+  <a class="btn btn-borde" href="{% url 'supermercado:facturas' %}">← Volver</a>
+</div>
+
+<form method="post" class="caja" style="padding:1.2rem;">
+  {% csrf_token %}
+  <div class="grid">
+    {% for campo in form %}
+      <div class="grupo">
+        <label>{{ campo.label }}</label>{{ campo }}
+        {% for e in campo.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <h2 style="font-size:1rem;color:var(--cana);margin:1.4rem 0 .5rem;">Detalle de bienes</h2>
+  <table id="lineas">
+    <thead><tr><th>Producto</th><th style="width:120px;">Cantidad</th><th style="width:60px;"></th></tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <select name="producto" class="campo" required>
+            <option value="">— Seleccione un producto —</option>
+            {% for p in productos %}
+              <option value="{{ p.pk }}">{{ p.nombre }} — $ {{ p.precio_venta|floatformat:0 }} ({{ p.get_categoria_iva_display }})</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td><input type="number" name="cantidad" class="campo" min="1" value="1" required></td>
+        <td><button type="button" class="btn btn-rojo btn-mini" onclick="quitar(this)">×</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-borde btn-mini" style="margin-top:.5rem;" onclick="agregar()">+ Agregar producto</button>
+
+  <div class="acciones">
+    <button type="submit" class="btn">Generar factura</button>
+    <a class="btn btn-borde" href="{% url 'supermercado:facturas' %}">Cancelar</a>
+  </div>
+</form>
+
+<script>
+  function agregar(){
+    const cuerpo = document.querySelector('#lineas tbody');
+    const fila = cuerpo.rows[0].cloneNode(true);
+    fila.querySelector('select').value = '';
+    fila.querySelector('input').value = 1;
+    cuerpo.appendChild(fila);
+  }
+  function quitar(boton){
+    const cuerpo = document.querySelector('#lineas tbody');
+    if (cuerpo.rows.length > 1) boton.closest('tr').remove();
+    else alert('La factura debe tener al menos 1 producto.');
+  }
+</script>
+{% endblock %}

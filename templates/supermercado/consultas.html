@@ -1,0 +1,50 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Consultas SQL</h1>
+    <p class="sub">20 consultas sobre el negocio: 10 básicas y 10 complejas (JOIN, subconsultas y funciones de ventana).</p></div>
+</div>
+<div class="buscador">
+  <a class="btn {% if grupo != 'todas' %}btn-borde{% endif %}" href="?grupo=todas">Todas (20)</a>
+  <a class="btn {% if grupo != 'basicas' %}btn-borde{% endif %}" href="?grupo=basicas">Básicas (10)</a>
+  <a class="btn {% if grupo != 'complejas' %}btn-borde{% endif %}" href="?grupo=complejas">Complejas (10)</a>
+</div>
+
+{% for c in resultados %}
+  <article class="caja" style="margin-bottom:1.2rem;">
+    <div style="display:flex;gap:.9rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--linea);">
+      <span style="flex:0 0 auto;width:2rem;height:2rem;display:grid;place-items:center;
+                   background:var(--amarilla);color:var(--cana-800);font-weight:700;font-size:.85rem;">{{ c.numero }}</span>
+      <div>
+        <h2 style="margin:0;font-size:1rem;">{{ c.titulo }}</h2>
+        <p style="margin:.1rem 0 0;font-size:.84rem;color:var(--gris);">{{ c.negocio }}</p>
+        <span class="tag tag-verde" style="margin-top:.25rem;display:inline-block;">{{ c.tecnica }}</span>
+        <span class="tag {% if c.grupo == 'basicas' %}tag-gris{% else %}tag-amarillo{% endif %}">
+          {% if c.grupo == 'basicas' %}BÁSICA{% else %}COMPLEJA{% endif %}</span>
+      </div>
+    </div>
+    {% if c.filas %}
+      <div class="scroll">
+        <table>
+          <thead><tr>{% for col in c.columnas %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for fila in c.filas %}
+              <tr>{% for celda in fila %}<td class="dato">{{ celda }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="vacio">Esta consulta no devolvió filas con los datos actuales.</p>
+    {% endif %}
+    <div style="display:flex;justify-content:space-between;padding:.5rem 1.1rem;background:#FBFCFA;
+                font-size:.78rem;color:var(--gris);">
+      <span>{{ c.total_filas }} fila{{ c.total_filas|pluralize:"s" }}{% if c.total_filas > 12 %} · se muestran 12{% endif %}</span>
+      <details><summary style="cursor:pointer;color:var(--cana);font-weight:600;">Ver SQL</summary>
+        <pre style="background:var(--tinta);color:#D7E4DC;padding:.8rem;overflow-x:auto;
+                    font-size:.75rem;margin:.5rem 0 0;">{{ c.sql }}</pre>
+      </details>
+    </div>
+  </article>
+{% endfor %}
+{% endblock %}

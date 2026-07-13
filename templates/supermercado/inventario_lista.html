@@ -1,0 +1,49 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Gestión de inventarios</h1>
+    <p class="sub">Días de stock = inventario actual ÷ demanda diaria. <strong>No se almacena</strong>: se calcula.</p></div>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por producto o sede…">
+  <select name="estado">
+    <option value="">Todos los estados</option>
+    <option value="AGOTADO" {% if estado == 'AGOTADO' %}selected{% endif %}>AGOTADO ({{ resumen.AGOTADO }})</option>
+    <option value="CRITICO" {% if estado == 'CRITICO' %}selected{% endif %}>CRÍTICO ({{ resumen.CRITICO }})</option>
+    <option value="ALERTA"  {% if estado == 'ALERTA' %}selected{% endif %}>ALERTA ({{ resumen.ALERTA }})</option>
+    <option value="SEGURO"  {% if estado == 'SEGURO' %}selected{% endif %}>SEGURO ({{ resumen.SEGURO }})</option>
+  </select>
+  <button class="btn" type="submit">Filtrar</button>
+  <a class="btn btn-borde" href="{% url 'supermercado:inventario' %}">Limpiar</a>
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>Producto</th><th>Proveedor</th><th>Sede</th><th>Inventario actual</th><th>Demanda diaria</th>
+      <th>Días de stock</th><th>Estado</th><th>Acción recomendada</th><th></th>
+    </tr></thead>
+    <tbody>
+      {% for i in inventarios %}
+        <tr>
+          <td>{{ i.producto.nombre }}</td>
+          <td style="font-size:.78rem;color:var(--gris);">{{ i.producto.proveedor.razon_social }}</td>
+          <td>{{ i.sede.nombre }}</td>
+          <td class="dato">{{ i.cantidad_disponible }}</td>
+          <td class="dato">{{ i.demanda_diaria }}</td>
+          <td class="dato"><strong>{{ i.dias_stock }}</strong></td>
+          <td>
+            {% if i.categoria_estado == 'AGOTADO' %}<span class="tag tag-rojo">AGOTADO</span>
+            {% elif i.categoria_estado == 'CRITICO' %}<span class="tag tag-naranja">CRÍTICO</span>
+            {% elif i.categoria_estado == 'ALERTA' %}<span class="tag tag-amarillo">ALERTA</span>
+            {% else %}<span class="tag tag-verde">SEGURO</span>{% endif %}
+          </td>
+          <td style="font-size:.82rem;">{{ i.accion_recomendada }}</td>
+          <td><a class="btn btn-borde btn-mini" href="{% url 'supermercado:inventario_editar' i.pk %}">Editar</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="vacio">Sin registros de inventario.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

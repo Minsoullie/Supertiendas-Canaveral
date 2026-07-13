@@ -1,0 +1,41 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Clientes</h1><p class="sub">Registro, consulta, actualización y eliminación.</p></div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:cliente_nuevo' %}">+ Registrar cliente</a>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por nombre, documento, email o ciudad…">
+  <button class="btn" type="submit">Buscar</button>
+  {% if buscar %}<a class="btn btn-borde" href="{% url 'supermercado:clientes' %}">Limpiar</a>{% endif %}
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>ID</th><th>Nombre / Razón social</th><th>Documento</th><th>Tipo</th><th>Régimen</th>
+      <th>Ciudad</th><th>Teléfono</th><th>Habeas data</th><th>Facturas</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+      {% for c in clientes %}
+        <tr>
+          <td class="dato">{{ c.id_cliente }}</td>
+          <td>{{ c.nombre_completo }}</td>
+          <td class="dato">{{ c.tipo_documento }} {{ c.numero_documento }}</td>
+          <td>{% if c.tipo_cliente == 'JURIDICO' %}<span class="tag tag-amarillo">JURÍDICO</span>{% else %}<span class="tag tag-gris">NATURAL</span>{% endif %}</td>
+          <td style="font-size:.78rem;">{{ c.get_regimen_tributario_display }}</td>
+          <td>{{ c.ciudad }}</td>
+          <td class="dato">{{ c.telefono }}</td>
+          <td>{% if c.habeas_data %}<span class="tag tag-verde">SÍ</span>{% else %}<span class="tag tag-rojo">NO</span>{% endif %}</td>
+          <td class="dato">{{ c.n_facturas }}</td>
+          <td style="white-space:nowrap;">
+            <a class="btn btn-borde btn-mini" href="{% url 'supermercado:cliente_editar' c.pk %}">Editar</a>
+            <a class="btn btn-rojo btn-mini" href="{% url 'supermercado:cliente_eliminar' c.pk %}">Eliminar</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10" class="vacio">No hay clientes que coincidan con la búsqueda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

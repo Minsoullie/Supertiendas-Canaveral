@@ -1,0 +1,49 @@
+{% extends "supermercado/base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Facturas electrónicas de venta</h1>
+    <p class="sub">Una factura guardada <strong>no se edita ni se elimina</strong>: solo se anula (normativa DIAN).</p></div>
+  <a class="btn btn-amarillo" href="{% url 'supermercado:factura_nueva' %}">+ Nueva factura</a>
+</div>
+<form class="buscador" method="get">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por número de factura, cliente o documento…">
+  <button class="btn" type="submit">Buscar</button>
+  {% if buscar %}<a class="btn btn-borde" href="{% url 'supermercado:facturas' %}">Limpiar</a>{% endif %}
+</form>
+<div class="caja scroll">
+  <table>
+    <thead><tr>
+      <th>Número</th><th>Fecha</th><th>Cliente</th><th>Sede</th><th>Método de pago</th>
+      <th>Canal</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+      {% for f in facturas %}
+        <tr>
+          <td class="dato"><strong>{{ f.numero_completo }}</strong></td>
+          <td class="dato">{{ f.fecha_orden|date:"Y-m-d H:i" }}</td>
+          <td>{{ f.cliente.nombre_completo }}</td>
+          <td style="font-size:.8rem;">{{ f.sede.nombre }}</td>
+          <td style="font-size:.8rem;">{{ f.metodo_pago.nombre }}</td>
+          <td><span class="tag tag-gris">{{ f.tipo_venta }}</span></td>
+          <td class="dato">$ {{ f.subtotal|floatformat:0 }}</td>
+          <td class="dato">$ {{ f.iva|floatformat:0 }}</td>
+          <td class="dato"><strong>$ {{ f.total|floatformat:0 }}</strong></td>
+          <td>
+            {% if f.estado == 'PAGADA' %}<span class="tag tag-verde">PAGADA</span>
+            {% elif f.estado == 'PENDIENTE' %}<span class="tag tag-amarillo">PENDIENTE</span>
+            {% else %}<span class="tag tag-rojo">ANULADA</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            <a class="btn btn-borde btn-mini" href="{% url 'supermercado:factura_detalle' f.pk %}">Ver</a>
+            {% if f.estado != 'ANULADA' %}
+              <a class="btn btn-rojo btn-mini" href="{% url 'supermercado:factura_anular' f.pk %}">Anular</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="11" class="vacio">No hay facturas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
