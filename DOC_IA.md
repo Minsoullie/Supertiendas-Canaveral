@@ -1,151 +1,87 @@
-# DOC_IA.md — Documentación del uso de Inteligencia Artificial Generativa
+# 📓 Bitácora de Uso de IA - Proyecto SGE
 
-Este documento cumple el **Requisito de Documentación Obligatoria** del enunciado del
-proyecto. Registra, para cada uso de IA: el **prompt utilizado**, el **resultado obtenido**
-y el **ajuste manual** que hubo que hacer para que el código funcionara en nuestro entorno.
+**Grupo:** 9
 
-| Dato | Valor |
-|---|---|
-| **Herramienta** | Claude (Anthropic) |
-| **Modelo** | Claude Opus 4.8 |
-| **Interfaz** | claude.ai (chat web) |
-| **Áreas de uso** | Generación de datos sintéticos · Optimización SQL · Desarrollo web (Django) |
+**Empresa:** Supertiendas Cañaveral S.A.
 
----
 
-## 1. Generación de datos sintéticos
+## 1. Fase de Diseño: Generación de Datos Sintéticos
 
-### Prompt utilizado
-> «Este es el código DDL de la base de datos que estoy haciendo de la empresa Supertiendas
-> Cañaveral, necesito que me ayudes con la generación de datos sintéticos, si necesitas
-> información adicional coméntame.»
->
-> Complementado con: *formato INSERT SQL directo · mínimo 1.000 registros de transacciones ·
-> prioridad en realismo de nombres, cédulas y NIT colombianos.*
+- **Herramienta utilizada:** Claude (Anthropic)
 
-### Resultado obtenido
-Un script en Python que produce un archivo `.sql` con sentencias `INSERT`, respetando el
-orden de las llaves foráneas y todas las restricciones `CHECK` / `UNIQUE`. Incluyó:
+- **Prompt:**
+  > "Este es el código DDL de la base de datos que estoy haciendo de la empresa
+  > Supertiendas Cañaveral, necesito que me ayudes con la generación de datos sintéticos,
+  > si necesitas información adicional coméntame." *(complementado con: formato INSERT
+  > SQL directo, mínimo 1.000 registros de transacciones, prioridad en realismo de
+  > nombres, cédulas y NIT colombianos)*.
 
-* Listas de nombres y apellidos frecuentes en Colombia.
-* **Dígito de verificación del NIT** calculado con el algoritmo oficial de la DIAN
-  (pesos por posición, módulo 11).
-* Sesgos estadísticos: popularidad desigual de productos, estacionalidad, predominio de
-  ventas presenciales, etc.
+- **Resultado de la IA:** Un script que genera un archivo `.sql` con sentencias `INSERT`,
+  respetando el orden de las llaves foráneas y las restricciones `CHECK`/`UNIQUE`. Incluyó
+  nombres y apellidos frecuentes en Colombia, y el **dígito de verificación del NIT**
+  calculado con el algoritmo oficial de la DIAN (pesos por posición, módulo 11).
 
-### Ajuste manual
-1. **Empresa real, no ficticia.** La primera versión asumió que Supertiendas Cañaveral era
-   una empresa inventada y generó sedes en ciudades donde la cadena **no** opera (Cartago,
-   Yumbo, Pereira) y marcas propias inventadas. Verificamos la información pública de la
-   empresa y **corregimos los datos**: sus 16 tiendas están en Cali (9) y en Palmira,
-   Jamundí, Candelaria, Buga, Tuluá, Zarzal y Roldanillo; su marca propia real es
-   **Doña Lupe**.
-2. **IVA de cuatro categorías.** El script original solo manejaba tarifas 0 / 5 / 19 y
-   confundía *exento* con *excluido*. Añadimos el campo `categoria_iva` y la regla de que
-   los productos **EXCLUIDOS no causan impuesto** (el sistema no calcula nada), como pide
-   la legislación colombiana.
-3. **`Decimal` en lugar de `float`.** Con punto flotante se perdían centavos y fallaba la
-   restricción `CHECK (total = subtotal + iva)`. Se cambió todo el cálculo monetario a
-   `Decimal` con `ROUND_HALF_UP`.
-4. **Coherencia de negocio.** Forzamos que el empleado que atiende una factura pertenezca a
-   la sede de esa factura, y que una orden de pedido solo contenga productos de su propio
-   proveedor.
-5. Se convirtió el script suelto en un **comando de Django** (`manage.py generar_datos`) con
-   `--limpiar`, `--seed` y volúmenes parametrizables.
+- **Ajuste Manual / Validación:** La IA asumió inicialmente que Supertiendas Cañaveral era
+  una empresa ficticia y generó sedes en ciudades donde la cadena no opera (Cartago,
+  Yumbo, Pereira) con una marca propia inventada. Se verifico la información pública real
+  de la empresa y se corrigio los datos: sus 16 tiendas están en Cali (9) y en Palmira,
+  Jamundí, Candelaria, Buga, Tuluá, Zarzal y Roldanillo para mayor realismo y su marca propia real es
+  **Doña Lupe**. También se reemplazo manualmente todo el cálculo monetario de `float` a
+  `Decimal`.
 
----
+## 2. Fase de Diseño: Ampliación del Modelo (campos exigidos por el negocio)
 
-## 2. Consultas SQL
+- **Herramienta utilizada:** Claude (Anthropic)
 
-### Prompt utilizado
-> «Consultas de validación: 10 consultas SELECT complejas (usando JOIN y GROUP BY) que
-> demuestren aspectos interesantes de la estructura de la base de datos. Estos aspectos
-> deben basarse en la naturaleza de los negocios de la empresa, ayúdame ahora con esto.»
+- **Prompt:**
+  > "¿Cumplí con lo que pide el proyecto?" *(seguido del PDF de la guía de la asignatura,
+  > pidiendo auditar el modelo contra el enunciado completo)*.
 
-### Resultado obtenido
-Diez consultas con `JOIN` y `GROUP BY` orientadas al negocio (ranking de sedes, productos
-estrella, participación por categoría, clientes valiosos, alerta de reabastecimiento,
-productividad de empleados, métodos de pago, marca propia, estacionalidad y margen bruto).
+- **Resultado de la IA:** Identificó que el modelo original no cubría varios campos
+  exigidos: Habeas Data y régimen tributario en `CLIENTE`; RUT, certificación bancaria,
+  calificación y tres contactos en `PROVEEDOR`; proveedor obligatorio y demanda diaria en
+  `PRODUCTO`; numeración DIAN e IVA discriminado por ítem en `ORDEN`.
 
-### Ajuste manual
-1. **Ampliación a 20 consultas.** El enunciado de la entrega final pide 20 (10 básicas +
-   10 complejas). Escribimos las 10 básicas adicionales y reclasificamos las existentes.
-2. **Corrección del *fan-out* del JOIN.** Al unir `ORDEN` con `DETALLE_ORDEN`, la cabecera
-   se repite una vez por cada línea; sumar `o.total` ahí contaba la misma factura varias
-   veces e inflaba los ingresos. Se cambió a agregar por el grano del detalle
-   (`d.subtotal`) o a usar `COUNT(DISTINCT o.idOrden)`.
-3. **Filtro `estado = 'PAGADA'`** en toda consulta que suma dinero, para no contar facturas
-   anuladas ni pendientes.
-4. La consulta de días de stock se reescribió para que **calcule** el valor
-   (`inventario / demanda_diaria`) en vez de leerlo de una columna: el enunciado prohíbe
-   almacenarlo.
+- **Ajuste Manual / Validación:** Se reviso cada campo sugerido contra el enunciado
+  original antes de aceptarlo (no se copió la lista completa a ciegas). Se rechazó, por
+  ejemplo, almacenar los "días de stock" como columna física y en su lugar se optó por calcularlo con una vista.
 
----
+## 3. Fase de Desarrollo: Integración de Django con PostgreSQL
 
-## 3. Aplicación web en Django
+- **Herramienta utilizada:** Claude (Anthropic)
 
-### Prompt utilizado
-> «Añade a este proyecto de Django la base de datos Postgres y toda la generación con esos
-> datos sintéticos.» Y después:
-> «Haz que quede todo acomodado a como lo pide, para que sea funcional la parte de la
-> interfaz y las funciones de views; te mando unas donde hay cosas de CRUD básicas, puedes
-> usarlas para ayudarme con la parte gráfica y que termine de ser un mejor proyecto
-> (no necesita login).»
+- **Prompt:**
+  > "Añádele a este proyecto de Django la base de datos Postgres y toda la generación...
+  > con esos datos sintéticos"
 
-### Resultado obtenido
-* Los 16 modelos de Django mapeados 1:1 con el DDL (mismos nombres de tabla, columna y
-  restricciones).
-* Configuración de PostgreSQL con credenciales en `.env`.
-* CRUD completo de las cinco entidades, plantillas HTML, formularios y las reglas de
-  integridad (eliminación lógica, facturas inalterables, campos protegidos).
-* Vistas SQL y triggers de PL/pgSQL del reto opcional.
+- **Resultado de la IA:** Los 16 modelos de Django mapeados 1:1 con el DDL (mismos
+  nombres de tabla y columna vía `db_column`), configuración de PostgreSQL con
+  credenciales en `.env`, y una migración inicial (`makemigrations`/`migrate`).
 
-### Ajuste manual
-1. **Bug en el proyecto base.** `INSTALLED_APPS` registraba la app como `'supermecado'`
-   (faltaba la **r**), lo que hacía fallar cualquier comando `manage.py` con
-   `ModuleNotFoundError`. Lo corregimos.
-2. **`ON DELETE` / `ON UPDATE` a nivel de motor.** Django gestiona `on_delete` en Python y
-   crea las llaves foráneas **sin** esas cláusulas en la base de datos. Como el DDL del
-   Avance 2/3 sí las exige, escribimos una migración con SQL explícito
-   (`0002_ddl_vistas_triggers.py`) que elimina las FK autogeneradas y las recrea con los
-   nombres del DDL y sus reglas.
-3. **Nombres de columna en minúscula.** PostgreSQL pasa a minúsculas los identificadores sin
-   comillas, así que `idCliente` del DDL es en realidad `idcliente`. Hubo que enlazar cada
-   campo con `db_column` para que el esquema del ORM coincidiera exactamente con el DDL.
-4. **Nombre de una llave primaria.** En el DDL, la PK de `tarjeta_amarilla` se llama
-   `PK_TARJETA` (no `PK_TARJETA_AMARILLA`). La migración la nombraba mal; lo detectamos
-   comparando las restricciones de ambas bases con `diff` y lo corregimos con un mapa
-   explícito de nombres.
-5. **El trigger interfería con la carga masiva.** Al insertar el histórico de facturas, el
-   trigger `trg_venta_descuenta_stock` descontaba unidades que ya estaban contempladas en el
-   inventario generado. Se desactiva temporalmente solo durante la carga inicial y se
-   reactiva al terminar.
-6. Se descartó el `views.py` de referencia (era de otro proyecto: usaba `@login_required`,
-   QR y generación de PDF). Se conservó únicamente el **patrón**: vistas basadas en
-   funciones, `forms.py`, `messages` y búsqueda con `Q`.
+- **Ajuste Manual / Validación:** Se detecto que Django gestiona la regla `ON DELETE` en
+  Python y no la escribe en la base de datos (crea las llaves foráneas sin esa cláusula).
+  Como el diseño sí exige esas reglas a nivel de motor, se escribió una segunda
+  migración con SQL explícito que elimina las llaves foráneas autogeneradas y las
+  recrea con los nombres y las reglas `ON DELETE`/`ON UPDATE` correctas. Se verifico la
+  equivalencia comparando con `diff` las restricciones de esta base contra las del DDL
+  original: coincidieron exactamente (83 de 83, cero diferencias) tras corregir a mano
+  el nombre de una sola llave primaria que la IA había nombrado distinto.
 
----
 
-## 4. Verificación (no delegada a la IA)
+### 4. Prompts para solucionar problemas simples
 
-Para no aceptar el código a ciegas, comprobamos por nuestra cuenta:
+> "Me sale el error `ModuleNotFoundError: No module named 'django'` al correr
+> `python manage.py runserver` en Windows. ¿Por qué pasa y cómo lo soluciono?"
 
-* **Equivalencia del esquema.** Cargamos dos bases en paralelo —una con el DDL escrito a mano
-  y otra con `manage.py migrate`— y comparamos la lista completa de restricciones extraída de
-  `pg_constraint` con `diff`. Resultado: idénticas.
-* **Los triggers.** Marcamos una orden de pedido como `RECIBIDA` y verificamos que el stock
-  subiera; creamos una factura y verificamos que el stock bajara.
-* **Las reglas de negocio.** Probamos que no se pueda borrar un cliente con facturas, que el
-  NIT quede bloqueado al editar, que un producto no se pueda crear sin proveedor y que una
-  factura solo se pueda anular (nunca editar ni eliminar).
-* **La aritmética.** Consultamos que ninguna factura viole `total = subtotal + iva`.
+> "Al ejecutar `.\venv\Scripts\Activate.ps1` en PowerShell me sale 'la ejecución de
+> scripts está deshabilitada en este sistema'. ¿Cómo lo arreglo sin desactivar la
+> seguridad de todo el equipo?"
 
----
+> "PostgreSQL me da el error `permission denied for schema public` al crear una tabla
+> con un usuario que no es el superusuario. ¿Qué permiso me falta otorgar?"
 
-## 5. Nota sobre autoría
+### 5. Prompt para documentar el código
 
-El uso de la IA fue **complementario**. El diseño del modelo entidad-relación, las decisiones
-de normalización, la elección de la empresa y las reglas de negocio son nuestras; la IA se usó
-como asistente de programación y para acelerar la generación de datos y de código repetitivo.
-Todo el código entregado fue revisado, ajustado y probado por el equipo, y estamos en
-capacidad de explicar y sustentar cada parte.
+> "Revisa los archivos de codigo y agrega docstrings y comentarios breves explicando qué
+> hace cada función, qué reglas de negocio aplica y qué devuelve. No cambies la lógica
+> ni el comportamiento del código, solo documenta."

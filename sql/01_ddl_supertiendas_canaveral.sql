@@ -1,9 +1,3 @@
--- ============================================================================
--- Supertiendas Cañaveral S.A. — Código DDL (PostgreSQL 16)
--- Esquema relacional normalizado (3NF): 16 tablas, 3 vistas, 2 triggers PL/pgSQL
--- Generado desde la base de datos real del proyecto.
--- ============================================================================
-
 \restrict gdGusLXOZ1GBrHTDE4ogWpLBYuwt5jwS6PudgJBTDey4Tgu02CQW8vmt1hLdlau
 SET statement_timeout = 0;
 SET lock_timeout = 0;

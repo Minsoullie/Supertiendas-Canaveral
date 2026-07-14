@@ -1,17 +1,3 @@
-"""
-Vistas de la aplicación web de Supertiendas Cañaveral.
-
-CRUD completo de las cinco entidades que exige el enunciado:
-  Clientes · Proveedores · Productos/Insumos · Facturas · Órdenes de Pedido
-
-Reglas de integridad implementadas:
-  * No se elimina un cliente o proveedor con facturas / órdenes asociadas.
-  * Los productos usan ELIMINACIÓN LÓGICA (activo = False).
-  * Las facturas y las órdenes de pedido NO son editables ni eliminables:
-    solo se pueden anular / cancelar (el rastro contable queda intacto).
-  * No se registra un producto ni una orden sin un proveedor previo.
-"""
-
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.contrib import messages
@@ -37,9 +23,9 @@ def money(x):
     return Decimal(x).quantize(CENT, rounding=ROUND_HALF_UP)
 
 
-# ===========================================================================
+
 #  INICIO / DASHBOARD
-# ===========================================================================
+
 def inicio(request):
     pagadas = Orden.objects.filter(estado="PAGADA")
     agg = pagadas.aggregate(ingresos=Sum("total"), n=Count("id_orden"))
@@ -81,9 +67,9 @@ def inicio(request):
     return render(request, "supermercado/inicio.html", contexto)
 
 
-# ===========================================================================
+
 #  CLIENTES  (CRUD)
-# ===========================================================================
+
 def clientes_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     clientes = Cliente.objects.all()
@@ -145,9 +131,8 @@ def cliente_eliminar(request, pk):
     })
 
 
-# ===========================================================================
 #  PROVEEDORES  (CRUD)
-# ===========================================================================
+
 def proveedores_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     proveedores = Proveedor.objects.all()
@@ -210,9 +195,7 @@ def proveedor_eliminar(request, pk):
     })
 
 
-# ===========================================================================
 #  PRODUCTOS / INSUMOS  (CRUD con eliminación lógica)
-# ===========================================================================
 def productos_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     ver_inactivos = request.GET.get("inactivos") == "1"
@@ -281,9 +264,9 @@ def producto_eliminar(request, pk):
     })
 
 
-# ===========================================================================
+
 #  INVENTARIO  (días de stock CALCULADOS, nunca almacenados)
-# ===========================================================================
+
 def inventario_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     estado = request.GET.get("estado", "")
@@ -318,9 +301,9 @@ def inventario_editar(request, pk):
     })
 
 
-# ===========================================================================
-#  FACTURAS DE VENTA  (crear + consultar + anular; NUNCA editar ni eliminar)
-# ===========================================================================
+
+#  FACTURAS DE VENTA  (crear, consultar, anular. No editar ni eliminar)
+
 def facturas_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     facturas = Orden.objects.select_related("cliente", "sede", "metodo_pago")
@@ -389,7 +372,7 @@ def factura_nueva(request):
             iva_total = Decimal("0.00")
             vistos = set()
             for pid, cant in pares:
-                if pid in vistos:            # evita violar UNIQUE (orden, producto)
+                if pid in vistos:            # evita no hacer caso al UNIQUE (orden, producto)
                     continue
                 vistos.add(pid)
                 producto = Producto.objects.get(pk=pid)
@@ -441,9 +424,9 @@ def factura_anular(request, pk):
     })
 
 
-# ===========================================================================
+
 #  ÓRDENES DE PEDIDO  (crear + consultar + recibir; NUNCA editar ni eliminar)
-# ===========================================================================
+
 def pedidos_lista(request):
     busqueda = request.GET.get("buscar", "").strip()
     pedidos = Compra.objects.select_related("proveedor", "sede")
@@ -561,9 +544,9 @@ def pedido_cancelar(request, pk):
     })
 
 
-# ===========================================================================
-#  CONSULTAS SQL  (20 consultas: 10 básicas + 10 complejas)
-# ===========================================================================
+
+#  CONSULTAS SQL  (20 consultas)
+
 def consultas_sql(request):
     grupo = request.GET.get("grupo", "todas")
     seleccion = [c for c in CONSULTAS

@@ -1,14 +1,4 @@
-"""
-Consultas SQL de Supertiendas Cañaveral.
 
-El enunciado pide 20 consultas:
-  * 10 BÁSICAS  : aspectos básicos del negocio.
-  * 10 COMPLEJAS: JOIN, subconsultas y consultas relacionadas.
-
-Se escriben en SQL puro (no ORM) porque el objetivo del curso es demostrar SQL.
-Se reutilizan desde la vista web (/consultas/) y desde el comando de consola
-`python manage.py consultas_validacion`.
-"""
 
 CONSULTAS = [
     # =====================================================================
@@ -439,7 +429,6 @@ CONSULTAS = [
 
 
 def ejecutar(consulta, connection):
-    """Ejecuta una consulta y devuelve (columnas, filas)."""
     with connection.cursor() as cur:
         cur.execute(consulta["sql"])
         columnas = [col[0] for col in cur.description]

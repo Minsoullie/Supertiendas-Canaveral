@@ -1,16 +1,10 @@
--- ============================================================================
--- Supertiendas Cañaveral S.A. — RETO OPCIONAL
---   1. Índices sobre las tablas más consultadas (ver el DDL)
---   2. Tres VISTAS de consultas recurrentes (una guarda los días de stock)
---   3. Gestión automática del inventario con PL/pgSQL (triggers)
--- ============================================================================
 
--- ---------------------------------------------------------------------------
--- 2. VISTAS
--- ---------------------------------------------------------------------------
 
--- VISTA 1: Días de stock por producto y sede, con su categoría de estado y la
--- acción recomendada. Los días NO se almacenan en ninguna tabla: la vista los calcula.
+
+-- VISTAS
+
+
+-- VISTA 1: Días de stock por producto y sede, con su categoría de estado y la acción recomendada. Los días no se almacenan en ninguna tabla: la vista los calcula.
 CREATE OR REPLACE VIEW vw_dias_stock AS
 SELECT i.idInventario,
        p.idProducto,
@@ -40,7 +34,7 @@ JOIN PROVEEDOR pr ON pr.idProveedor = p.idProveedor
 JOIN SEDE      s  ON s.idSede      = i.idSede
 WHERE p.activo = TRUE;
 
--- VISTA 2: Resumen de ventas por sede y mes (consulta recurrente de gerencia).
+-- VISTA 2: Resumen de ventas por sede y mes.
 CREATE OR REPLACE VIEW vw_ventas_mensuales AS
 SELECT s.idSede,
        s.nombre                                            AS sede,
@@ -56,7 +50,7 @@ JOIN SEDE  s ON s.idSede = o.idSede
 WHERE o.estado = 'PAGADA'
 GROUP BY s.idSede, s.nombre, s.ciudad, DATE_TRUNC('month', o.fechaOrden);
 
--- VISTA 3: Desempeño de proveedores (cumplimiento y monto comprado).
+-- VISTA 3: Desempeño de proveedores y monto comprado).
 CREATE OR REPLACE VIEW vw_desempeno_proveedores AS
 SELECT pr.idProveedor,
        pr.razonSocial                                      AS proveedor,
@@ -76,14 +70,12 @@ GROUP BY pr.idProveedor, pr.razonSocial, pr.nit, pr.tipoProveedor, pr.calificaci
          pr.tiempoEntregaPromedio, pr.condicionesPago;
 
 
--- ---------------------------------------------------------------------------
--- 3. GESTIÓN AUTOMÁTICA DE INVENTARIO (PL/pgSQL)
--- ---------------------------------------------------------------------------
 
--- ---------------------------------------------------------------------------
--- Al pasar una ORDEN DE PEDIDO a RECIBIDA, sumar sus unidades al inventario.
--- Si el producto aún no existe en esa sede, se crea la fila de inventario.
--- ---------------------------------------------------------------------------
+-- GESTIÓN AUTOMÁTICA DE INVENTARIO (PL/pgSQL)
+
+
+-- Al pasar una ORDEN DE PEDIDO a RECIBIDA, sumar sus unidades al inventario. Si el producto aún no existe en esa sede, se crea la fila de inventario.
+
 CREATE OR REPLACE FUNCTION fn_compra_recibida()
 RETURNS TRIGGER AS $$
 DECLARE d RECORD;
@@ -112,10 +104,10 @@ CREATE TRIGGER trg_compra_recibida
     EXECUTE FUNCTION fn_compra_recibida();
 
 
--- ---------------------------------------------------------------------------
+
 -- Al facturar una venta, descontar las unidades del inventario de esa sede.
 -- Nunca deja el stock en negativo (la restricción CHECK lo impediría).
--- ---------------------------------------------------------------------------
+
 CREATE OR REPLACE FUNCTION fn_venta_descuenta_stock()
 RETURNS TRIGGER AS $$
 DECLARE v_sede INT;

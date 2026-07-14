@@ -1,15 +1,3 @@
-"""
-Formularios de la aplicación.
-
-Reglas de negocio del enunciado que se aplican aquí:
-  * Al EDITAR un cliente o proveedor, el NIT/Cédula queda BLOQUEADO (campo crítico
-    protegido para no romper el historial contable).
-  * Un producto no se puede registrar sin un proveedor previamente registrado.
-  * La cantidad de una orden de pedido va de 1 a 500.
-  * Las facturas y las órdenes de pedido no tienen formulario de edición: una vez
-    guardadas son inalterables.
-"""
-
 from django import forms
 
 from .models import (

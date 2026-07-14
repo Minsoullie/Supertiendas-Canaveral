@@ -1,21 +1,3 @@
-"""
-Modelos de Supertiendas Cañaveral S.A. (empresa real, Valle del Cauca).
-
-Cubre TODOS los datos exigidos por el enunciado del proyecto:
-  * Clientes  : habeas data (Ley 1581/2012), régimen tributario, representante legal,
-                dirección operativa y de residencia.
-  * Proveedores: RUT, certificación bancaria, tipo, tiempo de entrega, 3 contactos,
-                condiciones de pago y calificación 1-5.
-  * Productos : proveedor asociado OBLIGATORIO, demanda diaria, categoría de IVA
-                (general / diferencial / exento / EXCLUIDO) y borrado lógico.
-  * Inventario: días de stock (NO se almacena: se calcula) y su categoría de estado.
-  * Facturas  : numeración DIAN (prefijo + resolución + vigencia), IVA discriminado
-                por ítem, subtotal / IVA / total.
-  * Órdenes de pedido: lugar de entrega y estado inicial PENDIENTE.
-
-Los nombres de tabla, columna y restricciones replican el DDL del Avance 2/3.
-"""
-
 from datetime import date
 from decimal import Decimal
 

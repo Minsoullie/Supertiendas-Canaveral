@@ -1,11 +1,3 @@
-"""
-Django settings for canaveral project.
-
-Base de datos: PostgreSQL (Avance 3 - Supertiendas Cañaveral).
-Las credenciales se leen desde el archivo .env para no dejarlas escritas
-en el código fuente (ver .env.example).
-"""
-
 import os
 from pathlib import Path
 

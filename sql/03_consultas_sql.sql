@@ -1,8 +1,6 @@
--- ============================================================================
--- Supertiendas Cañaveral S.A. — 20 Consultas SQL
+
 --   Consultas 1-10  : aspectos BÁSICOS del negocio
 --   Consultas 11-20 : aspectos COMPLEJOS (JOIN, subconsultas, ventanas)
--- ============================================================================
 
 -- ----------------------------------------------------------------------------
 -- CONSULTA 1 [BÁSICA]: Catálogo de productos activos por categoría

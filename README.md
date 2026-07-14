@@ -1,211 +1,123 @@
-# Supertiendas Cañaveral — Aplicación web y base de datos relacional
+# Proyecto Final: Sistema de Gestión Empresarial (SGE) - Bases de Datos
 
-Proyecto de la asignatura **Bases de Datos** — Universidad del Valle.
-Aplicación web en **Django** conectada a **PostgreSQL** para la gestión de datos de una
-empresa real del Valle del Cauca.
+**Asignatura:** 750006C Bases de Datos
 
----
+**Institución:** Universidad del Valle - Escuela de Ingeniería de Sistemas y Computación
 
-## La empresa
+**Docente:** Susana Medina Gordillo
 
-**Supertiendas Cañaveral S.A.** es una cadena de supermercados del Valle del Cauca. Cuenta
-con **16 tiendas**: 9 en Cali y 7 en Palmira, Jamundí, Candelaria, Buga, Tuluá, Zarzal y
-Roldanillo. Vende productos de consumo masivo al por mayor y al detal, y maneja una marca
-propia, **Doña Lupe**.
+**Semestre:** 2026-1
 
-* Sitio web: <https://supertiendascanaveral.com.co>
-* Compras en línea: <https://www.domicilioscanaveral.com>
-* Facebook: [@SupertiendasCanaveralOficial](https://www.facebook.com/SupertiendasCanaveralOficial/)
+## 🏢 Información de la Empresa Seleccionada
 
-> La información de la empresa proviene de fuentes públicas. Las transacciones (clientes,
-> ventas, empleados, proveedores) son **datos sintéticos**: ver [`DOC_IA.md`](DOC_IA.md).
+- **Nombre de la Empresa:** Supertiendas Cañaveral S.A.
+- **Sector Económico:** Comercio al detal — cadena de supermercados
+- **Descripción breve:** Cadena de supermercados real, con presencia regional en el
+  Valle del Cauca (16 tiendas: 9 en Cali y 7 en Palmira, Jamundí, Candelaria, Buga,
+  Tuluá, Zarzal y Roldanillo). Vende productos de consumo masivo: alimentos frescos,
+  abarrotes, aseo, licores y variedades al detal y al por mayor. Además maneja una
+  marca propia (**Doña Lupe**). El sistema gestiona clientes, proveedores, productos e
+  insumos, inventario por sede, facturación electrónica y órdenes de pedido.
 
----
+## 👥 Integrantes del Grupo
 
-## Diagrama Entidad-Relación
+1. Samuel Vargas Valderruten - 2537761
 
-![Diagrama MER](docs/mer.png)
+## 🛠️ Stack Tecnológico
 
-16 entidades · 18 relaciones · notación de clases UML (PK = llave primaria, FK = llave foránea).
-También disponible en [`docs/mer.svg`](docs/mer.svg) y como fuente en [`docs/mer.dot`](docs/mer.dot).
+- **Lenguaje:** Python 3.10+
+- **Framework Web:** Django 5.1
+- **Base de Datos:** PostgreSQL 16 (local para desarrollo)
+- **ORM / Conector:** Django ORM + psycopg2-binary
+- **Otros:** python-dotenv (credenciales por variables de entorno), pgAdmin 4
+  (administración gráfica de la base de datos)
 
----
+## 📐 Diseño de la Base de Datos (Avance #1)
 
-## Instalación
+Notación de clases UML, 16 entidades, 18 relaciones, todas 1:N. Cada entidad muestra
+sus llaves primarias (PK) y foráneas (FK).
 
-### 1. Requisitos
-* Python 3.10 o superior
-* PostgreSQL 14 o superior (probado en PostgreSQL 16)
+### Diagrama Entidad-Relación (DER)
 
-### 2. Entorno y dependencias
+![Diagrama Entidad-Relación](docs/mer.png)
+
+
+### Diccionario de Datos Resumido
+
+- **Terceros:** Gestión de clientes y proveedores (NIT/CC, RUT, certificación bancaria,
+  Habeas Data según la Ley 1581 de 2012).
+- **Productos/Insumos:** Catálogo con proveedor obligatorio, control de stock por sede
+  (`INVENTARIO`), demanda diaria y tiempo de entrega promedio del proveedor.
+- **Facturación:** Registro de ventas (`ORDEN` + `DETALLE_ORDEN`) con numeración DIAN
+  y cálculo de IVA legal colombiano discriminado por ítem.
+- **Órdenes de Pedido:** Gestión de compras y reabastecimiento (`COMPRA` +
+  `DETALLE_COMPRA`), con actualización automática del inventario vía trigger.
+
+
+## 🚀 Guía de Instalación y Ejecución
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/Minsoullie/Supertiendas-Canaveral
+cd supertiendas-canaveral
+```
+
+### 2. Configurar entorno virtual
+
 ```bash
 python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+source venv/bin/activate   # En Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Crear la base de datos
-```sql
-CREATE ROLE canaveral_user LOGIN PASSWORD 'canaveral2025';
-CREATE DATABASE canaveral_db OWNER canaveral_user;
-GRANT ALL PRIVILEGES ON DATABASE canaveral_db TO canaveral_user;
-```
+### 3. Configurar Base de Datos
 
-### 4. Credenciales
-Las contraseñas **no** están en `settings.py`: se leen de un archivo `.env`
-(que está en el `.gitignore`).
-```bash
-cp .env.example .env      # ajusta los valores si tu instalación difiere
-```
+1. Crear el rol y la base de datos en PostgreSQL:
 
-### 5. Migraciones y datos
-```bash
-python manage.py migrate          # crea las 16 tablas, las 3 vistas y los 2 triggers
-python manage.py generar_datos    # genera ~5.600 registros sintéticos
-```
+   ```sql
+   CREATE ROLE canaveral_user LOGIN PASSWORD 'canaveral2025';
+   CREATE DATABASE canaveral_db OWNER canaveral_user;
+   GRANT ALL PRIVILEGES ON DATABASE canaveral_db TO canaveral_user;
+   ```
 
-### 6. Ejecutar
+2. Copiar `.env.example` como `.env` y ajustar las credenciales si es necesario.
+
+3. Crear las tablas y cargar los datos. Hay **dos rutas equivalentes**:
+
+   **Ruta recomendada — con Django (crea tablas, vistas y triggers en un solo paso):**
+   ```bash
+   python manage.py migrate
+   python manage.py generar_datos
+   ```
+
+   **Ruta alternativa — SQL puro, ejecutando los scripts de la carpeta `sql/` en orden:**
+   ```bash
+   psql -U canaveral_user -d canaveral_db -f sql/01_esquema_relacional.sql
+   psql -U canaveral_user -d canaveral_db -f sql/04_vistas_y_triggers.sql
+   psql -U canaveral_user -d canaveral_db -f sql/02_datos_supertiendas_canaveral.sql
+   ```
+
+### 4. Ejecutar Aplicación
+
 ```bash
+# Django
 python manage.py runserver
 ```
-* **Aplicación web**: <http://127.0.0.1:8000/>
-* **Panel de administración**: <http://127.0.0.1:8000/admin/>
-  (crear usuario con `python manage.py createsuperuser`)
 
----
+Abrir <http://127.0.0.1:8000/> (aplicación) y <http://127.0.0.1:8000/admin/> (panel de
+administración; requiere `python manage.py createsuperuser`).
 
-## Módulos de la aplicación web
+## 📄 Notas de Entrega y Funcionalidades
 
-| Ruta | Módulo | Operaciones |
-|---|---|---|
-| `/` | Panel de gestión | Indicadores, ventas por mes, alertas de stock |
-| `/clientes/` | **Clientes** | Crear · Consultar · Editar · Eliminar |
-| `/proveedores/` | **Proveedores** | Crear · Consultar · Editar · Eliminar |
-| `/productos/` | **Productos / Insumos** | Crear · Consultar · Editar · Eliminación **lógica** |
-| `/inventario/` | Gestión de inventarios | Días de stock, categoría de estado y acción recomendada |
-| `/facturas/` | **Facturas de venta** | Crear · Consultar · **Anular** (no editable ni eliminable) |
-| `/pedidos/` | **Órdenes de pedido** | Crear · Consultar · Recibir · Cancelar |
-| `/consultas/` | Consultas SQL | Las 20 consultas ejecutándose en vivo |
-
-### Reglas de integridad implementadas
-* No se puede **eliminar un cliente o un proveedor** que tenga facturas u órdenes asociadas.
-* No se puede **registrar un producto ni una orden de pedido sin un proveedor previo**.
-* Los **productos** usan eliminación lógica (`activo`), para no perder el histórico de inventario.
-* Las **facturas y las órdenes de pedido** no se editan ni se eliminan: solo se anulan o cancelan.
-* Los **campos críticos** (NIT, cédula, código de barras, número de factura) quedan bloqueados al editar.
-* El **habeas data** (Ley 1581 de 2012) es obligatorio para registrar un cliente.
-* Los **días de stock nunca se almacenan**: se calculan como `inventario ÷ demanda diaria`.
-
-### Cálculo del IVA
-Se aplican las cuatro categorías vigentes en Colombia:
-
-| Categoría | Tarifa | Ejemplo |
-|---|---|---|
-| General | 19% | Aseo, licores, papelería |
-| Diferencial | 5% | Café, harinas, pastas, azúcar |
-| Exento | 0% | Sí causa impuesto, con tarifa cero |
-| **Excluido** | — | Arroz, papa, banano, carne, leche: **el sistema no calcula nada** |
-
-### Categorías de inventario (días de stock)
-
-| Días de stock | Estado | Acción recomendada |
-|---|---|---|
-| 0 días | AGOTADO | Pedido inmediato |
-| Menos de 5 | CRÍTICO | Pedido de emergencia |
-| Entre 5 y 15 | ALERTA | Realizar pedido normal |
-| Más de 15 | SEGURO | Mantener monitoreo |
-
----
-
-## Comandos disponibles
-
-```bash
-python manage.py generar_datos --limpiar         # regenera todos los datos
-python manage.py generar_datos --ordenes 1000    # más transacciones
-python manage.py generar_datos --seed 42         # otra semilla (reproducible)
-
-python manage.py consultas_validacion            # las 20 consultas en consola
-python manage.py consultas_validacion --grupo basicas
-python manage.py consultas_validacion --n 13     # solo la consulta 13
-
-python generar_mer.py                            # regenera el diagrama MER
-```
-
----
-
-## Scripts SQL
-
-| Archivo | Contenido |
-|---|---|
-| `sql/01_ddl_supertiendas_canaveral.sql` | Esquema completo: 16 tablas con todas las restricciones |
-| `sql/02_datos_supertiendas_canaveral.sql` | Carga de datos: ~5.600 sentencias `INSERT` |
-| `sql/03_consultas_sql.sql` | Las 20 consultas (10 básicas + 10 complejas) |
-| `sql/04_vistas_y_triggers.sql` | Reto opcional: 3 vistas + gestión automática de inventario |
-
-Carga alternativa sin Django:
-```bash
-psql -U canaveral_user -d canaveral_db -f sql/01_ddl_supertiendas_canaveral.sql
-psql -U canaveral_user -d canaveral_db -f sql/02_datos_supertiendas_canaveral.sql
-```
-
----
-
-## Reto opcional (implementado)
-
-1. **Índices** sobre las columnas más consultadas: fecha, sede, cliente y estado de la
-   factura; producto del detalle; categoría, proveedor y nombre del producto; documento del
-   cliente; proveedor de la orden de pedido.
-2. **Tres vistas** de consultas recurrentes:
-   * `vw_dias_stock` — días de stock, categoría de estado y acción recomendada.
-   * `vw_ventas_mensuales` — ventas por sede y mes.
-   * `vw_desempeno_proveedores` — cumplimiento y monto comprado por proveedor.
-3. **Gestión automática del inventario con PL/pgSQL**:
-   * `trg_compra_recibida` — al marcar una orden de pedido como **RECIBIDA**, suma
-     automáticamente las unidades al inventario de la sede.
-   * `trg_venta_descuenta_stock` — al facturar una venta, descuenta las unidades del stock.
-
----
-
-## Volumen y sesgos de los datos
-
-**5.599 registros** en total, de los cuales **3.194 son transaccionales**
-(mínimo exigido: 1.000).
-
-Los datos **no son uniformes**: se introdujeron sesgos intencionales para que las consultas
-resulten relevantes.
-
-| Dimensión | Sesgo |
-|---|---|
-| Estado de la factura | 82% pagada · 12% pendiente · 6% anulada |
-| Canal de venta | 78% presencial · 22% en línea |
-| Cantidad por línea | 1–2 unidades domina; cola larga hasta 12 |
-| Tipo de cliente | 82% natural · 18% jurídico |
-| Habeas data | ~93% autoriza el tratamiento de datos |
-| Calificación de proveedores | La mayoría entre 4 y 5; unos pocos malos |
-| Estado del inventario | 4% agotado · 12% crítico · 26% alerta · 58% seguro |
-| Catálogo | ~4% de productos descontinuados (eliminación lógica) |
-| Fechas | Repartidas de forma no uniforme entre 2024 y 2025 |
-
----
-
-## Estructura del proyecto
-
-```
-canaveral/            Configuración de Django (PostgreSQL, .env)
-supermercado/
-  models.py           Los 16 modelos
-  views.py            CRUD de las 5 entidades + inventario + consultas
-  forms.py            Formularios con las reglas de negocio
-  consultas.py        Las 20 consultas SQL
-  admin.py            Panel de administración
-  migrations/
-    0001_initial.py               Tablas, UNIQUE, CHECK, índices
-    0002_ddl_vistas_triggers.py   Reglas del DDL + vistas + triggers PL/pgSQL
-  management/commands/
-    generar_datos.py              Generador de datos sintéticos
-    consultas_validacion.py       Ejecuta las 20 consultas en consola
-templates/supermercado/           Plantillas HTML
-docs/mer.png                      Diagrama entidad-relación
-sql/                              Scripts SQL (DDL, datos, consultas, vistas, triggers)
-DOC_IA.md                         Documentación obligatoria del uso de IA
-```
+- **Gestión de Stock:** La aplicación calcula automáticamente el estado del inventario
+  (**Agotado / Crítico / Alerta / Seguro**) mediante la vista `vw_dias_stock`. Los días
+  de stock **no se almacenan**: se calculan como `inventario actual ÷ demanda diaria`.
+- **Integridad:** Se implementaron restricciones de llave foránea (`ON DELETE RESTRICT`)
+  para impedir la eliminación de proveedores o clientes con pedidos o facturas activas,
+  y para impedir registrar un producto sin un proveedor previamente existente.
+- **IVA:** El sistema soporta las cuatro categorías de la legislación colombiana —
+  **19%, 5%, 0% (exento) y Excluidos** (estos últimos no causan el impuesto).
+- **Automatización (PL/pgSQL):** Dos triggers mantienen el inventario sincronizado sin
+  intervención manual: `trg_compra_recibida` (suma stock al recibir un pedido) y
+  `trg_venta_descuenta_stock` (descuenta stock al facturar).
